@@ -1,12 +1,10 @@
-import ollama
+import streamlit as st
+from groq import Groq
 
-# Local LLM used for resume analysis.
-MODEL = "qwen2.5:7b"
+MODEL = "llama-3.1-8b-instant"
 
 
-# Build the prompt sent to the language model.
-def build_prompt(resume_text, job_description):
-
+def build_prompt(resume_text, job_description=""):
     return f"""
 You are an expert ATS recruiter and resume reviewer.
 
@@ -19,7 +17,6 @@ Job Description:
 {job_description}
 
 Provide:
-
 1. Missing Keywords
 2. Weak Sections
 3. Suggested Skills
@@ -30,31 +27,26 @@ Keep the response concise and practical.
 """
 
 
-# Send the prompt to the local Qwen model.
 def query_llm(prompt):
+    try:
+        client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
-    response = ollama.chat(
-        model=MODEL,
-        messages=[
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
-        options={
-            "temperature": 0.3,
-            "num_predict": 600
-        }
-    )
+        response = client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {"role": "system", "content": "You are an expert resume reviewer and ATS optimization assistant."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.3,
+            max_tokens=800
+        )
 
-    return response["message"]["content"]
+        return response.choices[0].message.content
+
+    except Exception:
+        return "AI feedback is currently unavailable. Please try again later."
 
 
-# Main function used by app.py.
 def get_ai_feedback(resume_text, job_description=""):
-
     prompt = build_prompt(resume_text, job_description)
-
-    feedback = query_llm(prompt)
-
-    return feedback
+    return query_llm(prompt)
