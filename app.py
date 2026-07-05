@@ -27,6 +27,10 @@ st.markdown("""
     margin-bottom: 1.5rem;
 }
 
+.hero h1 {
+    color: #0f172a !important;
+}
+            
 .card {
     padding: 1.2rem;
     border-radius: 14px;
@@ -106,7 +110,7 @@ if analyze_clicked:
         st.error("Could not extract text from this resume. Please try another file.")
         st.stop()
 
-    ats_result = calculate_ats_score(resume_text)
+    ats_result = calculate_ats_score(resume_text, job_description)
 
     st.subheader("Analysis Results")
 
